@@ -33,8 +33,7 @@ int main(int argc,char* argv[])
 			    if(workfd != -1)	
 				{
                     level = LoadLevel(PIDNUM);//意思意思
-                    SendFd(pipefd[level][1],workfd);
-                    //???close();
+                    send_fd(pipefd[level][1],workfd);
 				}
 			}
 		}//for

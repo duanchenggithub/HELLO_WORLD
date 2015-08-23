@@ -59,6 +59,7 @@ int Process(int sockfd, int epfd)
 int CreSrvNetSock()
 {
     int listenfd=0;
+    int on = 1;
     struct sockaddr_in srvaddr;
 
     if(-1 == (listenfd=socket(AF_INET,SOCK_STREAM,0)))
@@ -70,6 +71,8 @@ int CreSrvNetSock()
     srvaddr.sin_family=AF_INET;
     srvaddr.sin_port=htons(SRVPORT);
     srvaddr.sin_addr.s_addr=htonl(INADDR_ANY);
+    setsockopt(listenfd,SOL_SOCKET,SO_REUSEADDR,&on,sizeof(on)); 
+
     if(-1 == bind(listenfd,(struct sockaddr*)&srvaddr,sizeof(srvaddr)))
     {
         printf("bind net socket error \n");
@@ -107,7 +110,7 @@ int CreateWorkProc(int pipefd[][2], int num)
 }
 
 static const int CONTROL_LEN = CMSG_LEN(sizeof(int));
-void SendFd(int fd, int fd_to_send)
+void send_fd(int fd, int fd_to_send)
 {
     struct iovec iov[1];
     struct msghdr msg;
@@ -169,6 +172,7 @@ int WorkProc(int readfd)
     int nfd = 0;
     int i=0;
     int sockfd =0;
+    int connfd =0; 
     struct epoll_event workevs[MAXFDS];
 
     workepfd = epoll_create(MAXFDS);
@@ -181,7 +185,9 @@ int WorkProc(int readfd)
             sockfd = workevs[i].data.fd;
             if(sockfd == readfd)
             {
-               ;//取出文件描述副
+                connfd=recv_fd(sockfd);
+                addfd(workepfd, connfd, 1, 1); 
+                send(connfd,"helloworld",10,0);//test
             } 
         }
     }

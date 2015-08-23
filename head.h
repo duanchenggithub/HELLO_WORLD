@@ -15,7 +15,7 @@
 #include <time.h>
 #define MAXFDS 1024
 #define BUFFER_SIZE 4096
-#define PIDNUM 1
+#define PIDNUM 2
 #define SRVPORT 2948
 #define UNIX_SOCK_PATH "/tmp/unix-socket"
 int setnonblocking (int fd);
@@ -25,9 +25,8 @@ int Process(int sockfd, int epfd);
 int CreSrvNetSock(); 
 int CreateWorkProc(int pipefd[][2], int num);  
 int LoadLevel(int pidnum);
-void SendFd(int fd, int fd_to_send); 
+void send_fd(int fd, int fd_to_send); 
 int WorkProc(int readfd); 
-
 
 
 #endif
