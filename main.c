@@ -10,17 +10,19 @@ int main(int argc,char* argv[])
     int pipefd[PIDNUM][2]={{0}};
 	struct sockaddr_in cliaddr;
 	struct epoll_event events[MAXFDS];
-
+    
     netlisfd = CreSrvNetSock();
+    InitLog();
+
     CreateWorkProc(pipefd, PIDNUM);
 
 	epfd=epoll_create(MAXFDS); 
     addfd(epfd, netlisfd, 0, 0);
+    sleep(15);
+    Errlog(__FILE__, __LINE__, "helloworld"); //test
 
 	while(1)
 	{
-		fflush(stdout);
-        
 		nfd=epoll_wait(epfd, events, MAXFDS, -1);
 		for(i=0;i<nfd;++i)
 		{
@@ -34,10 +36,11 @@ int main(int argc,char* argv[])
 				{
                     level = LoadLevel(PIDNUM);//意思意思
                     send_fd(pipefd[level][1],workfd);
+                    close(workfd);
 				}
 			}
-		}//for
-	}	//while
+		}
+	}	
 	close(epfd);
 	return 0;
 }

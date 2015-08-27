@@ -30,8 +30,9 @@ void delfd(int epollfd, int fd)
 
 int Process(int sockfd, int epfd)
 {
-	char buf[BUFFER_SIZE]={0};
+	char buf[BUFFER_SIZE]={0}; //需要多次接收才能接收完成的一个消息的时候，buf该怎么保存，多个socket
 	int ret =0;
+    int sum =0;
 	while(1)
 	{
 		memset(buf, 0, BUFFER_SIZE);
@@ -39,22 +40,22 @@ int Process(int sockfd, int epfd)
 		if(ret < 0)
 		{
 			if( (errno == EAGAIN) || (errno == EWOULDBLOCK) )
-			{
 				break;   //end recv
-			}
 		}
 		else if( ret == 0)  
 		{
 			delfd(epfd, sockfd);
 			close(sockfd);
+            return 0;
 		}
 		else 
 		{
-			printf("recv %s ,work process\n",buf);
+            sum += ret;
+			printf("recv %s ,work process,sum=%d\n",buf,sum);
 		}
 	
 	}
-	return 0;
+	return sum;
 }
 int CreSrvNetSock()
 {
@@ -72,8 +73,7 @@ int CreSrvNetSock()
     srvaddr.sin_port=htons(SRVPORT);
     srvaddr.sin_addr.s_addr=htonl(INADDR_ANY);
     setsockopt(listenfd,SOL_SOCKET,SO_REUSEADDR,&on,sizeof(on)); 
-
-    if(-1 == bind(listenfd,(struct sockaddr*)&srvaddr,sizeof(srvaddr)))
+if(-1 == bind(listenfd,(struct sockaddr*)&srvaddr,sizeof(srvaddr)))
     {
         printf("bind net socket error \n");
         exit(0);
@@ -85,11 +85,14 @@ int CreSrvNetSock()
     }
     return listenfd;
 }
+
 int CreateWorkProc(int pipefd[][2], int num)
 {
     int i = 0;
     int pid = 0;
     int ret = 0;
+    Errlog( __FILE__, __LINE__, "CreateWorkProc");//test
+
     for(i=0; i<num; i++)
     {
         ret = socketpair(PF_UNIX, SOCK_DGRAM, 0, pipefd[i]);
@@ -100,10 +103,9 @@ int CreateWorkProc(int pipefd[][2], int num)
             WorkProc(pipefd[i][0]);
             exit(0);
         }
-        else if(pid < 0)
+        else if(pid > 0)
         {
-            printf("create process error\n");
-            exit(0);
+            close(pipefd[i][0]);
         }
     }
     return 0;
@@ -187,8 +189,11 @@ int WorkProc(int readfd)
             {
                 connfd=recv_fd(sockfd);
                 addfd(workepfd, connfd, 1, 1); 
-                send(connfd,"helloworld",10,0);//test
             } 
+            else 
+            {
+                Process(sockfd,workepfd);
+            }
         }
     }
     return 0;

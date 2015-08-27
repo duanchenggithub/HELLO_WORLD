@@ -1,6 +1,8 @@
 #ifndef __HEAD_H
 #define __HEAD_H
-#include <stdio.h>                                                         
+#include "log.h"
+#include <stdio.h>                                                     
+#include <limits.h>
 #include <sys/un.h>
 #include <string.h>
 #include <unistd.h>
@@ -17,7 +19,6 @@
 #define BUFFER_SIZE 4096
 #define PIDNUM 2
 #define SRVPORT 2948
-#define UNIX_SOCK_PATH "/tmp/unix-socket"
 int setnonblocking (int fd);
 void addfd( int epollfd, int fd, int enable_et, int noblock);
 void delfd(int epollfd, int fd);
@@ -27,7 +28,7 @@ int CreateWorkProc(int pipefd[][2], int num);
 int LoadLevel(int pidnum);
 void send_fd(int fd, int fd_to_send); 
 int WorkProc(int readfd); 
-
+int CreateLogProc(int pipefd[2],int* buffmax);
 
 #endif
 

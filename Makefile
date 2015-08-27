@@ -1,11 +1,11 @@
 OBJ = fun.o main.o 
 CC = gcc
-CFLAGS = -Wall -O0 -g -llog
-all:$(OBJ) liblog.a
-	$(CC) $(OBJ) -o test 
+CFLAGS = -Wall -O0 -g -I . -L . -llog
+all:$(OBJ) log
+	$(CC) $(OBJ) $(CFLAGS) -o test 
 fun.o: head.h
 main.o: head.h
-liblog.a: log.o
+log: log.o
 	ar crs liblog.a log.o
 log.o: log.h
 .PHONY:clean
